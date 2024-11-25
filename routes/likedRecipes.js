@@ -73,19 +73,19 @@ router.get("/common", async (req, res) => {
     }
     const yourLikedRecipes = likedRecipes.recipes;
     // Get common liked recipes
+    console.log("getting common liked recipes");
     const commonLikedRecipes = [];
-    for (const friendId of friendIds) {
-      const friendLikedRecipes = await LikedRecipes.findOne({
-        userId: friendId,
+    const fiendsLikedRecipes = await LikedRecipes.find({
+      userId: { $in: friendIds },
+    });
+    fiendsLikedRecipes.forEach((friendLikedRecipes) => {
+      friendLikedRecipes.recipes.forEach((recipe) => {
+        if (yourLikedRecipes.includes(recipe)) {
+          commonLikedRecipes.push(recipe);
+        }
       });
-      if (!friendLikedRecipes) {
-        continue;
-      }
-      const commonRecipes = friendLikedRecipes.recipes.filter((id) =>
-        yourLikedRecipes.includes(id)
-      );
-      commonLikedRecipes.push({ friendId, commonRecipes });
-    }
+    });
+    res.status(200).json({ commonLikedRecipes });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
